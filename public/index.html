@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>wurld chat</title>
+
+  <head>
+    <script src="socket.io.js"></script>
+    <style>
+      span {
+        font-weight: bold;
+      }
+
+      #log {
+        display: flex;
+        flex-direction: column-reverse;
+        list-style: none;
+      }
+    </style>
+  </head>
+
+<body>
+  <h1>wurld chat</h1>
+
+  <form id="chatForm">
+    <input id="name" type="text" name="who" placeholder="name" autocomplete="off">
+    <input id="text" type="text" name="what" placeholder="say" autocomplete="off">
+    <button id="submit">send</button>
+  </form>
+  <ul id="log"></ul>
+
+  <script>
+    // socket events + handling
+    const socket = io();
+    socket.on('connect', function (data) {
+      console.log('Connected');
+    });
+    socket.on('speak', updateLog);
+
+    // grab elements on page
+    let log = document.getElementById('log');
+    let name = document.getElementById('name');
+    let text = document.getElementById('text');
+
+    // emit message if not empty
+    document.querySelector('#chatForm').addEventListener("submit", function (e) {
+      e.preventDefault();
+      if (name.value.trim() === '' || text.value.trim() === '') {
+        return false;
+      }
+      socket.emit('speak', { who: name.value, what: text.value });
+      text.value = '';
+      return false;
+    });
+
+    // update log element when new data comes in
+    function updateLog(data) {
+      while (log.firstChild) {
+        log.removeChild(log.firstChild);
+      };
+      data.forEach(element => {
+        let li = document.createElement('li');
+        // let author = document.createElement('span').appendChild(document.createTextNode(`${element.who}: `));
+        // li.appendChild(author);
+        // li.appendChild(document.createTextNode(element.what));
+        li.innerHTML = `<span>${element.who}: </span>${element.what}`;
+        log.appendChild(li);
+      });
+    };
+  </script>
+</body>
+
+</html>
